@@ -22,6 +22,7 @@ export class TokenInputComponent implements OnInit {
   ) { }
 
   activeRepos: string[] = [];
+  pageNumber = 1;
 
   ngOnInit(): void {
   }
@@ -32,13 +33,23 @@ export class TokenInputComponent implements OnInit {
 
   onFetchReposClick() {
     this.activeRepos = [];
-    this.appService.fetchReposfromGH(this.tokenFormControl.value).subscribe( (res: any) => {
-      if (res.length) {
-        res.forEach((data: any) => {
+    this.getAllRepos();
+  }
+
+  getAllRepos() {
+    this.appService.fetchReposfromGH(this.tokenFormControl.value, this.pageNumber).subscribe( (res: any) => {
+      if (res.items.length) {
+        res.items.forEach((data: any) => {
           if (!data.archived && !data.disabled) {
             this.activeRepos.push(data.name);
           }
-        })
+        });
+        console.log(this.activeRepos.length);
+        console.log('totsl Count', res.total_count);
+        if( this.pageNumber < Math.ceil(res.total_count / 100) ) {
+          this.pageNumber++;
+          this.getAllRepos();
+        }
       }
     })
   }
